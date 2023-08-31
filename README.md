@@ -12,12 +12,13 @@ The program terminates when the required number of hashes is found.
 Usage: hash_finder [OPTIONS] -N <ZEROES> -F <COUNT>
 
 Options:
-  -N <ZEROES>      The number of zeros that should be at the end of the hash
-  -F <COUNT>       Number of hashes to find
-  -C <CORES>       Number of threads to use
-  -S <STEP>        Number of hashes processed in one step by one thread
-  -h, --help       Print help
-  -V, --version    Print version
+  -N <ZEROES>          The number of zeros that should be at the end of the hash
+  -F <COUNT>           Number of hashes to find
+  -C <CORES>           Number of threads to use. Default value depends on OC
+  -S <STEP>            Number of hashes processed in one step by one thread. defaults to 10000
+      --start <START>  The number from which the hash search starts [default: 1]
+  -h, --help           Print help
+  -V, --version        Print version
 ```
 
 ## Installation:

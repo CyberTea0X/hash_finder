@@ -22,6 +22,9 @@ Options:
 ```
 
 ## Installation:
+```bash
+https://github.com/CyberTea0X/hash_finder
+```
 
 ## Examples:
 

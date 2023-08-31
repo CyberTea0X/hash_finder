@@ -15,7 +15,7 @@ fn main() {
         None => 10000,
     };
     let (tx, rx) = mpsc::channel();
-    let current = Arc::new(Mutex::new(0u32.to_biguint().unwrap()));
+    let current = Arc::new(Mutex::new(config.start.to_biguint().unwrap()));
     let end = "0".repeat(config.zeroes as usize);
     let mut remaining = config.count;
     if remaining == 0 {

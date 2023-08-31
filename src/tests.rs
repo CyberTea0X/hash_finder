@@ -47,7 +47,13 @@ pub fn hashes_is_valid(hashes: &[(BigUint, String)], c: &Cli) -> bool {
 
 #[test]
 pub fn one_hash() {
-    let config = Cli {zeroes: 3, count: 1, cores: Some(1), step: Some(1000)};
+    let config = Cli {
+        zeroes: 3,
+        count: 1,
+        cores: Some(1),
+        step: Some(1000),
+        start: 1,
+    };
     let hashes = hash_finder(&config);
     println!("one_hash:\n{:#?}", hashes);
     assert!(hashes_is_valid(hashes.as_slice(), &config))
@@ -55,7 +61,13 @@ pub fn one_hash() {
 
 #[test]
 pub fn multi_threading() {
-    let config = Cli {zeroes: 3, count: 1, cores: Some(16), step: Some(1000)};
+    let config = Cli {
+        zeroes: 3,
+        count: 1,
+        cores: Some(16),
+        step: Some(1000),
+        start: 1,
+    };
     let hashes = hash_finder(&config);
     println!("multi_threading:\n{:#?}", hashes);
     assert!(hashes_is_valid(hashes.as_slice(), &config))
@@ -63,7 +75,13 @@ pub fn multi_threading() {
 
 #[test]
 pub fn zero_zeroes() {
-    let config = Cli {zeroes: 0, count: 1, cores: Some(16), step: Some(10000)};
+    let config = Cli {
+        zeroes: 0,
+        count: 1,
+        cores: Some(16),
+        step: Some(10000),
+        start: 1,
+    };
     let hashes = hash_finder(&config);
     println!("zero_zeroes:\n{:#?}", hashes);
     assert!(hashes_is_valid(hashes.as_slice(), &config))
@@ -71,7 +89,27 @@ pub fn zero_zeroes() {
 
 #[test]
 pub fn ten_hashes() {
-    let config = Cli {zeroes: 3, count: 10, cores: Some(16), step: Some(10000)};
+    let config = Cli {
+        zeroes: 3,
+        count: 10,
+        cores: Some(16),
+        step: Some(10000),
+        start: 1,
+    };
+    let hashes = hash_finder(&config);
+    println!("ten_hashes:\n{:#?}", hashes);
+    assert!(hashes_is_valid(hashes.as_slice(), &config))
+}
+
+#[test]
+pub fn start_1000() {
+    let config = Cli {
+        zeroes: 3,
+        count: 10,
+        cores: Some(16),
+        step: Some(10000),
+        start: 1000,
+    };
     let hashes = hash_finder(&config);
     println!("ten_hashes:\n{:#?}", hashes);
     assert!(hashes_is_valid(hashes.as_slice(), &config))

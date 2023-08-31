@@ -18,12 +18,16 @@ pub struct Cli {
     pub count: u32,
 
     /// Number of threads to be used
-    #[arg(short = 'C', help = "Number of threads to use")]
+    #[arg(short = 'C', help = "Number of threads to use. Default value depends on OC")]
     pub cores: Option<usize>,
 
     /// The number of hashes that a single thread processes
-    #[arg(short = 'S', help = "Number of hashes processed in one step by one thread")]
+    #[arg(short = 'S', help = "Number of hashes processed in one step by one thread. defaults to 10000")]
     pub step: Option<u32>,
+
+    /// The number from which the search for hashes starts
+    #[arg(long="start", help = "The number from which the hash search starts", default_value_t=1)]
+    pub start: u32,
 }
 
 /// A structure that contains everything needed for a parallel

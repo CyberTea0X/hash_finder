@@ -1,8 +1,11 @@
-use std::{thread::{available_parallelism, self}, sync::{mpsc, Mutex, Arc}};
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread::available_parallelism,
+};
 
 use clap::Parser;
 use hash_finder::{Cli, HashFindWorker};
-use num_bigint::{ToBigUint};
+use num_bigint::ToBigUint;
 
 fn main() {
     let config = Cli::parse();
@@ -19,12 +22,11 @@ fn main() {
     let end = "0".repeat(config.zeroes as usize);
     let mut remaining = config.count;
     if remaining == 0 {
-        return
+        return;
     }
 
     for _ in 0..available_cores {
-        HashFindWorker::new(tx.clone(), end.clone(), current.clone(), step)
-            .start()
+        HashFindWorker::new(tx.clone(), end.clone(), current.clone(), step).start()
     }
     for (num, hash) in rx {
         println!("{num}, \"{hash}\"");

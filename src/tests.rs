@@ -1,21 +1,19 @@
 use std::sync::{mpsc, Arc, Mutex};
 
-use hash_finder::{HashFindWorker, Cli};
+use hash_finder::{Cli, HashFindWorker};
 #[cfg(test)]
 use num_bigint::BigUint;
 use num_bigint::ToBigUint;
 
 /// Finds hashes according to config
 pub fn hash_finder(c: &Cli) -> Vec<(BigUint, String)> {
-
     let (tx, rx) = mpsc::channel();
     let current = Arc::new(Mutex::new(0u32.to_biguint().unwrap()));
     let end = "0".repeat(c.zeroes as usize);
     let mut remaining = c.count;
 
     for _ in 0..c.cores.unwrap() {
-        HashFindWorker::new(tx.clone(), end.clone(), current.clone(), c.step.unwrap())
-            .start()
+        HashFindWorker::new(tx.clone(), end.clone(), current.clone(), c.step.unwrap()).start()
     }
     let mut hashes = Vec::new();
     for (num, hash) in rx {
@@ -25,24 +23,24 @@ pub fn hash_finder(c: &Cli) -> Vec<(BigUint, String)> {
             break;
         }
     }
-    return hashes
+    return hashes;
 }
 
 /// Checks hashes for validity according to config
 pub fn hashes_is_valid(hashes: &[(BigUint, String)], c: &Cli) -> bool {
     let must_end_with = "0".repeat(c.zeroes as usize);
     if hashes.len() != c.count as usize {
-        return false
+        return false;
     }
     for hash in hashes {
         if !hash.1.ends_with(&must_end_with) {
-            return false
+            return false;
         }
         if hash.1 != sha256::digest(hash.0.to_string()) {
-            return false
+            return false;
         }
     }
-    return true
+    return true;
 }
 
 #[test]

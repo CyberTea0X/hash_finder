@@ -1,4 +1,10 @@
-use std::{sync::{mpsc::{Sender, SendError}, Arc, Mutex}, thread};
+use std::{
+    sync::{
+        mpsc::{SendError, Sender},
+        Arc, Mutex,
+    },
+    thread,
+};
 
 use clap::Parser;
 use num_bigint::BigUint;
@@ -10,7 +16,10 @@ use num_bigint::BigUint;
 #[command(about = "hash_finding utility")]
 pub struct Cli {
     /// The number of zeros that should be at the end of the hash
-    #[arg(short = 'N', help = "The number of zeros that should be at the end of the hash")]
+    #[arg(
+        short = 'N',
+        help = "The number of zeros that should be at the end of the hash"
+    )]
     pub zeroes: u32,
 
     /// Number of hashes to find
@@ -18,20 +27,30 @@ pub struct Cli {
     pub count: u32,
 
     /// Number of threads to be used
-    #[arg(short = 'C', help = "Number of threads to use. Default value depends on OC")]
+    #[arg(
+        short = 'C',
+        help = "Number of threads to use. Default value depends on OC"
+    )]
     pub cores: Option<usize>,
 
     /// The number of hashes that a single thread processes
-    #[arg(short = 'S', help = "Number of hashes processed in one step by one thread. defaults to 10000")]
+    #[arg(
+        short = 'S',
+        help = "Number of hashes processed in one step by one thread. defaults to 10000"
+    )]
     pub step: Option<u32>,
 
     /// The number from which the search for hashes starts
-    #[arg(long="start", help = "The number from which the hash search starts", default_value_t=1)]
+    #[arg(
+        long = "start",
+        help = "The number from which the hash search starts",
+        default_value_t = 1
+    )]
     pub start: u32,
 }
 
 /// A structure that contains everything needed for a parallel
-/// search for hashes with the specified number of zeros at the end. 
+/// search for hashes with the specified number of zeros at the end.
 pub struct HashFindWorker {
     tx: Sender<(BigUint, String)>,
     ends_with: String,
@@ -40,15 +59,24 @@ pub struct HashFindWorker {
 }
 
 impl HashFindWorker {
-    pub fn new(tx: Sender<(BigUint, String)>, ends_with: String, current: Arc<Mutex<BigUint>>, step: u32) -> Self { Self { tx, ends_with, current, step } }
-
+    pub fn new(
+        tx: Sender<(BigUint, String)>,
+        ends_with: String,
+        current: Arc<Mutex<BigUint>>,
+        step: u32,
+    ) -> Self {
+        Self {
+            tx,
+            ends_with,
+            current,
+            step,
+        }
+    }
 
     /// Starts a hash search. Hash search will stop when destroyed
     /// channel that receives messages
     pub fn start(self) {
-        thread::spawn(move || {
-            self.work()
-        });
+        thread::spawn(move || self.work());
     }
 
     /// Looks for step hashes. If it finds it, it sends the number and hash

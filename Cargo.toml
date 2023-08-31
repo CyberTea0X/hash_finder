@@ -19,5 +19,11 @@ license = "Unlicense OR MIT"
 name = "hash_finder"
 src = "src/main.rs"
 
+[[test]]
+name = "unit_tests"
+path = "src/tests.rs"
+
 [dependencies]
 sha256 = "1.4.0"
+num-bigint = "0.4.4"
+clap = { version = "4.4.2", features = ["derive"] }

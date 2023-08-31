@@ -1,13 +1,36 @@
-use std::thread::available_parallelism;
+use std::{thread::{available_parallelism, self}, sync::{mpsc, Mutex, Arc}};
 
-use hash_finder::{Config, ParseConfigError, show_syntax};
+use clap::Parser;
+use hash_finder::{Cli, HashFindWorker};
+use num_bigint::{ToBigUint};
 
 fn main() {
-    let args: Vec<_> = std::env::args().collect();
-    let config = match Config::parse(args.as_slice()) {
-        Ok(c) => c,
-        Err(ParseConfigError::NotEnoughArguments) => return show_syntax(),
-        Err(e) => panic!("{}", e),
+    let config = Cli::parse();
+    let available_cores = match config.cores {
+        Some(c) => c,
+        None => available_parallelism().unwrap().get(),
     };
-    let available_cores = available_parallelism().unwrap().get();
+    let step = match config.step {
+        Some(s) => s,
+        None => 10000,
+    };
+    let (tx, rx) = mpsc::channel();
+    let current = Arc::new(Mutex::new(0u32.to_biguint().unwrap()));
+    let end = "0".repeat(config.zeroes as usize);
+    let mut remaining = config.count;
+    if remaining == 0 {
+        return
+    }
+
+    for _ in 0..available_cores {
+        HashFindWorker::new(tx.clone(), end.clone(), current.clone(), step)
+            .start()
+    }
+    for (num, hash) in rx {
+        println!("{num}, \"{hash}\"");
+        remaining -= 1;
+        if remaining == 0 {
+            return;
+        }
+    }
 }

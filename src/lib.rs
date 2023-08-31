@@ -1,84 +1,66 @@
-use std::{env, error::Error, fmt::Display};
+use std::{sync::{mpsc::{Sender, SendError}, Arc, Mutex}, thread};
 
-/// Состояние чтения с консоли
-pub enum ReadState {
-    Reading,
-    ReadingN,
-    ReadingF,
+use clap::Parser;
+use num_bigint::BigUint;
+
+#[derive(Parser)]
+#[command(name = "hash_finder")]
+#[command(author = "CyberTea0X <mihailusov_778@mail.ru>")]
+#[command(version = "0.1.0")]
+#[command(about = "hash_finding utility")]
+pub struct Cli {
+    /// The number of zeros that should be at the end of the hash
+    #[arg(short = 'N', help = "The number of zeros that should be at the end of the hash")]
+    pub zeroes: u32,
+
+    /// Number of hashes to find
+    #[arg(short = 'F', help = "Number of hashes to find")]
+    pub count: u32,
+
+    /// Number of threads to be used
+    #[arg(short = 'C', help = "Number of threads to use")]
+    pub cores: Option<usize>,
+
+    /// The number of hashes that a single thread processes
+    #[arg(short = 'S', help = "Number of hashes processed in one step by one thread")]
+    pub step: Option<u32>,
 }
 
-#[derive(Debug, Clone)]
-pub struct Config {
-    zeroes: u32,
-    count: u32,
+/// A structure that contains everything needed for a parallel
+/// search for hashes with the specified number of zeros at the end. 
+pub struct HashFindWorker {
+    tx: Sender<(BigUint, String)>,
+    ends_with: String,
+    current: Arc<Mutex<BigUint>>,
+    step: u32,
 }
 
-impl Config {
-    pub fn new(zeroes: u32, count: u32) -> Self { Self { zeroes, count } }
+impl HashFindWorker {
+    pub fn new(tx: Sender<(BigUint, String)>, ends_with: String, current: Arc<Mutex<BigUint>>, step: u32) -> Self { Self { tx, ends_with, current, step } }
 
-    /// Парсит конфиг программы из строк обозначающих окружение
-    pub fn parse(args: &[String]) -> Result<Config, ParseConfigError> {
-        let mut state = ReadState::Reading;
-        let mut zeroes: Option<u32> = None;
-        let mut count: Option<u32> = None;
-        if args.len() == 1 {
-            return Err(ParseConfigError::NotEnoughArguments);
-        }
-        // Читаем консольные аргументы
-        for arg in args.iter() {
-            match state {
-                ReadState::Reading => match arg.as_str() {
-                    "-N" => state = ReadState::ReadingN,
-                    "-F" => state = ReadState::ReadingF,
-                    _ => continue,
-                },
-                ReadState::ReadingN => {
-                    zeroes = arg.parse().ok();
-                    state = ReadState::Reading;
+
+    /// Starts a hash search. Hash search will stop when destroyed
+    /// channel that receives messages
+    pub fn start(self) {
+        thread::spawn(move || {
+            self.work()
+        });
+    }
+
+    /// Looks for step hashes. If it finds it, it sends the number and hash
+    pub fn work(self) -> Result<(), SendError<(BigUint, String)>> {
+        loop {
+            let mut lock = self.current.lock().unwrap();
+            let mut c = lock.clone();
+            *lock += self.step;
+            drop(lock);
+            for _ in 0..self.step {
+                let hash = sha256::digest(c.to_string());
+                if hash.ends_with(self.ends_with.as_str()) {
+                    self.tx.send((c.clone(), hash))?;
                 }
-                ReadState::ReadingF => {
-                    count = arg.parse().ok();
-                    state = ReadState::Reading;
-                }
+                c += 1u32;
             }
         }
-        // Валидация
-        let zeroes = zeroes.ok_or(ParseConfigError::ParseN)?;
-        let count = count.ok_or(ParseConfigError::ParseF)?;
-
-        Ok(Config::new(zeroes, count))
     }
 }
-
-#[derive(Debug, Clone)]
-pub enum ParseConfigError {
-    ParseN,
-    ParseF,
-    NotEnoughArguments,
-}
-
-impl Display for ParseConfigError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ParseConfigError::ParseN => write!(f, "N is not specified"),
-            ParseConfigError::ParseF => write!(f, "F is not specified"),
-            ParseConfigError::NotEnoughArguments => write!(f, "No arguments were specified"),
-        }
-    }
-}
-
-/// Показывает синтаксис команды
-pub fn show_syntax() {
-    println!("\
-NAME
-hash_finder - tool for finding sha256 hashes
-
-SYNOPSIS
-hash_finder -N COUNT_OF_ZEROS -F COUNT_OF_HASHES
-
-DESCRIPTION
-hash finder is a console application for finding sha256 hashes that end in
-to the specified number of zeros.
-             ");
-}
-

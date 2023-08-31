@@ -1,0 +1,15 @@
+[package]
+name = "hash_finder"
+version = "0.1.0"
+authors = ["CyberTea0X <mihailusov_778@mail.ru>"]
+edition = "2021"
+description = """
+hash finder is a console application for finding sha256 hashes that end in
+to the specified number of zeros.
+"""
+documentation = ""
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sha256 = "1.4.0"

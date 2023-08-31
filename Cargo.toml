@@ -7,7 +7,12 @@ description = """
 hash finder is a console application for finding sha256 hashes that end in
 to the specified number of zeros.
 """
-documentation = ""
+documentation = "https://github.com/CyberTea0X/hash_finder/tree/main"
+homepage = "https://github.com/CyberTea0X/hash_finder/tree/main"
+repository = "https://github.com/CyberTea0X/hash_finder/tree/main"
+keywords = ["sha256", "hash", "find", "hash_finder"]
+categories = ["command-line-utilities", "hash-processing"]
+license = "Unlicense OR MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
